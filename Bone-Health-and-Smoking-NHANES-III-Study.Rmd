@@ -1,0 +1,659 @@
+---
+title: "DSCI 6607 -- Final R Project -- Fall 2023"
+author: "Salman Yunus - 202292166"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(vioplot)
+
+
+```
+<br>
+<br>
+***Part-1 : An `Introduction' section describing the dataset (and its background), describe statistically the types of the variables and what graphical displays and statistical measures are appropriate for the variables.***
+
+<br>
+**Introduction : **
+
+The boneExam dataset is a valuable resource for researchers studying bone health and related factors in adults. The data was collected as part of the Third National Health and Nutrition Examination Survey (NHANES III), a large-scale study conducted by the Centers for Disease Control and Prevention (CDC) from 1988 to 1994. NHANES III was designed to assess the health and nutrition status of the non-institutionalized U.S. population. The boneExam dataset specifically focuses on bone health measures and smoking history among survey participants.
+
+<br>
+**Background: **
+
+Bone health is a crucial aspect of overall well-being, particularly as individuals age. Bones are dynamic tissues that undergo continuous remodeling, involving the breakdown of old bone tissue and the formation of new bone tissue. This process maintains bone strength and structure. However, with aging, the balance between bone formation and breakdown shifts, leading to a gradual decrease in bone mineral density (BMD), a key determinant of bone strength.
+
+Osteoporosis, a condition characterized by low BMD and increased fracture risk, is a major public health concern. It affects millions of people worldwide, particularly postmenopausal women and older adults. Osteoporosis-related fractures can have debilitating consequences, including pain, disability, and reduced quality of life.
+
+Smoking is a significant risk factor for osteoporosis. Tobacco use accelerates bone loss and increases the risk of fractures. Additionally, smoking can impair the absorption of calcium, an essential nutrient for bone health.
+
+<br>
+**NHANES III and the boneExam Dataset **
+
+The NHANES III boneExam dataset provides a comprehensive collection of data on bone health and smoking history among a representative sample of the U.S. adult population. The dataset includes information on:
+
+1. Demographic characteristics (age, sex, race, ethnicity).
+
+2. Anthropometric measurements (weight, body mass index, ... ,Thigh Circumference).
+
+3. Bone mineral density (BMD) measurements of the femur neck, trochanter, and total hip.
+
+4. Smoking history (ever smoked, current smoking status, number of cigarettes smoked per day, age at smoking initiation).
+
+<br>
+I will be performing the following **Data Analysis** on the provided boneExam Dataset:
+<br>
+
+1. Counting each individuals for Demographic characteristics (sex, race, and ethnicity) and plotting them for visual representation.
+
+2. Visualizing the Age and Gender of Individuals during Interview.
+
+3. Visulaizing the 8 Anthropometric measurements such as (weight, body mass index,...,Thigh Circumference) to see the overall distribution.
+
+4. Visualize the Pregnant Examinee with their Age(s) at Interview and by Race-Ethnicity.
+
+5. Whole Analysis on Smoking History of the Individual(s).
+
+6. Comparison of Smoking variables with other Health Measures like BMI and Food intake by Quitting Smoking.
+
+7. Exploring the relation of all smoking variables with Demographic characteristics (sex, race, ethnicity).
+
+8. Analysis the relationship b/w age and Anthropometric measurements (weight, body mass index, ... ,Thigh Circumference).
+
+9. Analysis of Anthropometric measurements with different sex groups.
+
+10. Exploring the impact of Race-ethnicity on Anthropometric measurements.
+
+11. Exploring the Correlation Analysis b/w Anthropometric measurements.
+
+12. Predicting the Bone Mineral Density (BMD) using demographic and anthropometric factors using Linear Regression Model. Training, Testing and Evaluating the prediction of my model.
+
+13. Comparing the average BMD across all ethnic groups and visualizing the distributions. 
+
+14. Relation b/w Age vs BMD (bone mineral density).
+
+15. Relationship b/w Sex vs BMD (bone mineral density).
+
+<br>
+**Significance of the boneExam Dataset **
+
+The boneExam dataset is a valuable resource for understanding the epidemiology of bone health and smoking-related bone loss. It can be used to:
+
+1- Identify individuals at high risk of osteoporosis and fractures.
+
+2- Develop and evaluate preventive interventions for bone loss.
+
+3- Monitor the impact of public health initiatives on bone health.
+
+4- Gain insights into the relationship between smoking and bone health.
+
+5- Inform clinical decision-making regarding bone health management.
+
+<br>
+
+
+```{r}
+
+# Create a data frame of the given boneExam Dataset.
+
+Bone_dataframe_1 <- data.frame(
+  Variable = c("SEQN","DMARETHN","DMARACER","DMAETHNR","HSSEX","HSAGEIR","BMPWT","BMPBMI","BMPHT","BMPARMC","BMPWAIST","BMPBUTTO","BMPWHR","BMPTHICI","PEPPREG","DRPNKCAL","MYPB1","MYPB2","MYPB3","MYPB4","MYPB5","MYPB6R","MYPB7R","MYPB8","MYPB9S","MYPB10","MYPB11","MYPB12","MYPB13S","MYPB14","MYPC17","BDPFNBMD","BDPTRBMD","BDPINBMD","BDPTOBMD"),
+  Type = c("int", "int", "int", "int", "int", "int","dbl", "dbl","dbl","dbl","dbl","dbl","dbl","dbl","int", "lgl", "int", "int", "int", "int","int", "int", "int", "int", "int", "int","int", "int", "int", "int", "int", "dbl","dbl","dbl","dbl"),
+
+Description = c("Respondent identification number", "Race-ethnicity", "Race",  "Ethnicity", "Sex", "Age at interview (Screener)", "Weight (kg) (2 months and over)","Body mass index","Standing height (cm) (2 years and over)","Arm circumference(cm)(2 months and over)","Waist circumference (cm) (2+ years)", "Buttocks circumference (cm) (2+ years)", "Waist to hip ratio","Thigh circumference (cm)(2 yrs and   over)", "Examinee pregnant--cannot obtain BIA", "Food energy (kcal)", "Have you smoked at least one cigarette", "Age when smoked first cigarette", "Have you smoked 100+ cigarettes in life", "Age first smoked cigarettes regularly", "Do you smoke cigarettes now", "Cigarettes smoked per day", "Years smoked reported amount","Smoked more than # in B6 for 1+ years", "Cigarettes smoked/day when smoked most", "Ever quit smoking for 1 year or more","Cigarettes smoked in the past 5 days", "Age last smoked cigarettes regularly", "Cigarettes usually smoked per day","Quit smoking due to health problems", "Used 5+ containers chew tobacco or snuff","Bone mineral density femur neck-gm/cm sq", "BMD of trochanter region -gm/cm sq","BMD of intertrochanter region -gm/cm sq","Bone minrl density total region-gm/cm sq"
+),
+
+Graphical_Displays = c("Histogram","Pie Chart","Bar Chart","Pie Chart","Bar Chart","Bar Chart","Histogram","Scatter Plot","Histogram","Histogram","Histogram","Histogram","Scatter Plot","Histogram","Bar Chart","Histogram","Pie Chart","Histogram", "Pie Chart","Histogram","Pie Chart","Histogram","Histogram","Pie Chart","Histogram", "Pie Chart","Histogram","Histogram","Histogram","Pie Chart","Pie Chart","Histogram","Histogram","Histogram","Histogram"))
+
+print(Bone_dataframe_1)
+
+# Purpose of dataframe_1 is to show the Variables their Types, Descriptions and Graphical Displays.
+
+```
+
+
+
+```{r}
+
+Bone_dataframe_2 <- data.frame(
+  Variable_2 = c("SEQN","DMARETHN","DMARACER","DMAETHNR","HSSEX","HSAGEIR","BMPWT","BMPBMI","BMPHT","BMPARMC","BMPWAIST","BMPBUTTO","BMPWHR","BMPTHICI","PEPPREG","DRPNKCAL","MYPB1","MYPB2","MYPB3","MYPB4","MYPB5","MYPB6R","MYPB7R","MYPB8","MYPB9S","MYPB10","MYPB11","MYPB12","MYPB13S","MYPB14","MYPC17","BDPFNBMD","BDPTRBMD","BDPINBMD","BDPTOBMD"),
+  Statistical_Properties = c("Unique value","Distribution of race-ethnicity groups","Most common race","Most common ethnicity","Distribution of sex", "Mean and standard deviation","Mean and standard deviation","Mean and standard deviation", "Mean and standard deviation","Mean and standard deviation","Mean and standard deviation", "Mean and standard deviation","Mean and standard deviation","Mean and standard deviation","Mode","Mean and standard deviation",  "Mode","Mean and standard deviation","Mode", "Mean and standard deviation","Mode","Mean and standard deviation", "Mean and standard deviation","Mode","Mean and standard deviation","Mode", "Mean and standard deviation", "Mean and standard deviation", "Mean and standard deviation","Mode","Mode", "Mean and standard deviation","Mean and standard deviation","Mean and standard deviation", "Mean and standard deviation"),
+  
+   Statistical_Distributions = c("-","Multinomial Distr.","Categorical Distr.","Categorical Distr.","Binomial Distr.","Normal Distr.", "Normal Distr.","Normal Distr.","Normal Distr.","Normal Distr.","Normal Distr.","Normal Distr.","Log-normal Distr.","Normal Distr.","Categorical Distr.","Gamma Distr.", "Categorical Distr.","Normal Distr.","Categorical Distr.","Normal Distr.","Categorical Distr.", "Poisson Distr.","Gamma Distr.","Categorical Distr.","Normal Distr.","Categorical Distr.","Neg Binomial Distr.","Normal Distr.","Normal Distr.","Categorical Distr.","Categorical Distr.","Log-normal Distr.","Log-normal Distr.", "Log-normal Distr.","Log-normal Distr.")
+)
+print(Bone_dataframe_2)
+
+# Purpose of dataframe_2 is to show Variables Statistical Properties and Distributions.
+
+```
+<br>
+The availability of this data allows researchers to investigate the prevalence of osteoporosis and other bone health conditions, identify risk factors for bone loss, and evaluate the effectiveness of interventions for improving bone health.
+
+<br>
+***Part-2 : A `Data analysis' section where you show your R codes, graphical displays and your proposed models. Code should have accompanying text that presents what you claimed in the introduction section.***
+<br>
+<br>
+**Data Analysis : **
+
+```{r}
+
+boneExam_ds <- read.csv("boneExam.csv")
+head(boneExam_ds)
+
+# Removing Missing values Columns
+
+boneExam_ds <- boneExam_ds[,!(names(boneExam_ds) %in% c("DRPNKCAL","MYPB1","MYPB2","MYPB3","MYPB4","MYPB5","MYPB6R","MYPB7R","MYPB8","MYPB9S","MYPB10","MYPB11","MYPB12","MYPB13S","MYPB14","MYPC17"))]
+
+# 1- Counting each individuals for Demographic characteristics (sex, race, and ethnicity) and plotting them for visual representation.
+
+race_counts <- table(boneExam_ds$DMARACER)
+sex_counts <- table(boneExam_ds$HSSEX)
+ethnicity_counts <- table(boneExam_ds$DMAETHNR)
+
+custom_piechart <- function(counts, title) {
+  colors <- rainbow(length(counts))
+  percentages <- prop.table(counts) * 100  
+  pie(counts, main = title, labels = sprintf("%s\n%.1f%%", names(counts), percentages), col = colors, cex = 0.8, border = "white")
+  legend("topright", legend = sprintf("%s (%d)", names(counts), sum(counts)), fill = colors, cex = 0.8)
+}
+
+custom_piechart(race_counts, "Pie Chart for Race")    
+custom_piechart(sex_counts, "Pie Chart for Sex")
+custom_piechart(ethnicity_counts, "Pie Chart for Ethnicity")
+```
+Pie Charts above provides us the basic analysis of the counts of individuals in different categories based on variables related to Race, Sex, and Ethnicity. Providing visual representations of the distribution of individuals across categories.
+
+```{r}
+
+boneExam_cat <- data.frame(
+  Race = factor(boneExam_ds$DMARACER),
+  Sex = factor(boneExam_ds$HSSEX),
+  Ethnicity = factor(boneExam_ds$DMAETHNR)
+)
+
+# Create the scatter plot
+ggplot(boneExam_cat, aes(x = Race, y = Sex, color = Ethnicity, shape = Ethnicity)) +
+  geom_point(size = 4, alpha = 0.7) +
+  labs(title = "Categorical Scatter Plot for Race, Sex, and Ethnicity",
+       x = "Race",
+       y = "Sex",
+       color = "Ethnicity",
+       shape = "Ethnicity") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c("#1b9e77", "#d95f02", "#7570b3")) +  
+  scale_shape_manual(values = c(16, 17, 18)) +
+  guides(alpha = FALSE)
+
+```
+
+Categorical scatter plot above, visualizes the relationship between the Race and Sex variables, with points differentiated by both color and shape based on the Ethnicity variable.
+
+```{r}
+
+# 2. Visualizing the Age and Gender of Individuals during Interview. 
+
+vioplot(HSAGEIR ~ HSSEX, data = boneExam_ds, col = "skyblue",
+        fill = "skyblue", main = "Age and Sex of Individual during Interview")
+```
+
+This Violin distribution is of Age and Sex of Individual during Interview. The distribution is skewed to the right for both men and women, with more individuals concentrated in the younger age groups. However, the median age at interview is higher for women (44.5 years) than for men (41.5 years). This suggests that women are more likely to delay their initial bone exam until later in life.
+
+```{r}
+
+# 3. Visulaizing the 8 Anthropometric measurements such as (weight, body mass index,...,Thigh Circumference) to see the overall distribution.
+
+boneExam_measures <- boneExam_ds[, c(7, 8, 9, 10, 11, 12, 13, 14)]
+boneExam_measures_long <- gather(boneExam_measures)
+
+# Create a facetted histogram
+ggplot(boneExam_measures_long, aes(x = value, fill = key)) +
+  geom_histogram(bins = 20, alpha = 0.7, color = "white", position = "identity") +
+  facet_wrap(~key, scales = "free") +
+  scale_fill_brewer(palette = "Set3") +  # Use a color palette
+  labs(title = "Histograms of Physical Measurements",
+       x = "Value",
+       y = "Density") +
+  theme_minimal() +  # Use a minimal theme
+  theme(axis.text.x = element_text(angle = 30, hjust = 1),
+        panel.grid.major = element_line(color = "#d95f02", linetype = 2),
+        panel.grid.minor = element_blank()) +
+  geom_vline(xintercept = mean(boneExam_measures_long$value), color = "blue", linetype = "dashed")
+
+```
+
+Overall, it provides a good overview of the distribution of the eight physical measurements included in the dataset. The data appears to be normally distributed for most of the measurements, with a few exceptions. There is also a wider range of values for some of the measurements compared to others.Mean and Median values of every physical measurements are being similar.
+
+```{r}
+
+# 4. Visualize the Pregnant Examinee with their Age(s) at Interview and by Race-Ethnicity.
+
+pregnant_examinees <- boneExam_ds[boneExam_ds$PEPPREG, ]
+
+# Create a scatter plot with age information
+ggplot(pregnant_examinees, aes(x = HSAGEIR, y = HSSEX, size = HSAGEIR)) +
+  geom_point(alpha = 0.7, color = "#339966") +  # Adjust point color
+  labs(title = "Pregnant Examinees with Age Information",
+       x = "Age at Interview",
+       y = "Individuals",
+       size = "Age") +
+  theme_minimal() +
+  theme(legend.position = "right")  
+
+```
+
+The graph represents the age at interview for pregnant examinees in the boneExam_ds dataset. The plot shows that the ages of pregnant examinees, with the majority of examinees falling between the ages of 20 and 30. The median age of pregnant examinees is approximately 30 years old. There is a slight peak in the age distribution of pregnant examinees at around 30 years old.
+
+```{r}
+
+point_style <- "diamond"
+point_size <- 3
+grid_line_color <- "#000000"
+
+ggplot(pregnant_examinees, aes(x = HSSEX, y = HSAGEIR, color = DMARETHN)) +
+  geom_point(alpha = 0.5, shape = point_style, size = point_size) +
+  labs(title = "Pregnant Examinees: Age at Interview by Sex and Race-Ethnicity",
+       x = "Sex",
+       y = "Age at Interview",
+       color = "Race-ethnicity") +
+  theme_minimal() +
+  theme(panel.grid.major = element_line(color = grid_line_color, linetype = 2),
+        panel.grid.minor = element_line(color = grid_line_color, linetype = 2),
+        axis.text.x = element_text(angle = 30, hjust = 1)) +
+  geom_hline(yintercept = mean(pregnant_examinees$HSAGEIR),
+              color = "blue", linetype = "dashed")
+
+```
+
+The graph provides a valuable overview of the distribution of age at interview for pregnant examinees by race and ethnicity. The data suggests that pregnant women of all races and ethnicities are more likely to delay their initial bone exam until later in life. The majority of pregnant examinees are between the ages of 20 and 40, regardless of race or ethnicity.
+
+```{r}
+
+# 5. Whole Analysis on Smoking History of the Individual(s).
+
+boneExam_ds <- read.csv("boneExam.csv")
+
+# Scatter plot: MYPB3 vs. MYPB4
+
+ggplot(boneExam_ds, aes(x = MYPB4, y = MYPB3, color = HSSEX)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "MYPB3: Smoked 100+ cigarettes in life vs. MYPB4: Age first smoked cigarettes regularly",
+       x = "Age first smoked cigarettes regularly",
+       y = "Smoked 100+ cigarettes in life (yes/no)",
+       color = "Sex") +
+  theme_minimal() 
+
+```
+
+Plot above shows the relationship between smoking 100+ cigarettes and the age at which regular smoking began. Smokers who have consumed more cigarettes tend to start smoking at a younger age. The color coding distinguishes between males and females.
+
+```{r}
+
+# Scatter plot: MYPB6R vs. MYPB7R
+
+ggplot(boneExam_ds, aes(x = MYPB7R, y = MYPB6R)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "MYPB6R: Cigarettes smoked per day vs. MYPB7R: Years smoked reported amount",
+       x = "Years smoked reported amount",
+       y = "Cigarettes smoked per day") +
+  theme_minimal()+geom_smooth(method = "lm", color = "red", se = FALSE)
+
+```
+
+Plot above reveals a positive correlation between the number of cigarettes smoked per day and the duration of smoking. Smokers who have smoked for longer periods tend to smoke more cigarettes daily. The red line represents the fitted linear regression line.
+
+```{r}
+
+# Scatter plot: MYPB8 vs. MYPB9S
+
+ggplot(boneExam_ds, aes(x = MYPB9S, y = MYPB8)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "MYPB8: Smoked more than # from B6 for 1 year or more vs. MYPB9S: Cigarettes smoked/day when smoked most",
+       x = "Cigarettes smoked/day when smoked most",
+       y = "Smoked more than # from B6 for 1+ years (yes/no)") +
+  theme_minimal()
+
+```
+
+Plot above indicates a positive association between exceeding the reported amount of cigarettes for over a year and the peak number of cigarettes smoked per day. Smokers who exceeded their reported amount for an extended period tend to have a higher peak daily cigarette intake. The color coding distinguishes between males and females.
+
+```{r}
+
+# Scatter plot: MYPB12 vs. MYPB13S
+
+ggplot(boneExam_ds, aes(x = MYPB13S, y = MYPB12)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "MYPB12: Age last smoked cigarettes regularly vs. MYPB13S: Cigarettes usually smoked per day",
+       x = "Cigarettes usually smoked per day",
+       y = "Age last smoked cigarettes regularly") +
+  theme_minimal()
+
+```
+
+Plot above explores the relationship between the age last smoked cigarettes regularly (MYPB12) and the usual number of cigarettes smoked per day (MYPB13S). It aims to identify any potential trends between age and smoking habits.
+
+```{r}
+
+# Scatter plot: MYPB14 vs. MYPC17
+
+ggplot(boneExam_ds, aes(x = MYPC17, y = MYPB14, color = HSSEX)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "MYPB14: Quit smoking due to health problems vs. MYPC17: Used 5+ containers of chew tobacco or snuff",
+       x = "Used 5+ containers of chew tobacco or snuff (yes/no)",
+       y = "Quit smoking due to health problems (yes/no)",
+       color = "Sex") +
+  theme_minimal()
+
+```
+
+Plot above investigates the relationship between quitting smoking due to health problems (MYPB14) and using 5 or more containers of chew tobacco or snuff (MYPC17).The color coding again distinguishes between males and females to assess potential differences in this relationship for each sex.
+
+
+
+```{r}
+
+# 6. Comparison of Smoking variables with other Health Measures like BMI and Food intake by Quitting Smoking.
+
+boneExam_ds <- read.csv("boneExam.csv")
+
+# MYPB6R vs. BMPBMI: Cigarettes per Day and Body Mass Index
+
+ggplot(boneExam_ds, aes(x = BMPBMI, y = MYPB6R)) +
+  geom_point(alpha = 0.5, size = 3) +
+  labs(title = "Cigarettes Smoked per Day vs. Body Mass Index (BMI)",
+       x = "Body Mass Index (BMI)",
+       y = "Cigarettes Smoked per Day") +
+  theme_minimal()
+
+```
+
+Plot above shows a possible positive association between the number of cigarettes smoked per day and BMI. While not statistically significant, it suggests potential trends for further investigation.
+
+```{r}
+
+# MYPB14 vs. DRPNKCAL: Quitting Smoking and Food Energy Intake
+
+ggplot(boneExam_ds, aes(x = DRPNKCAL, y = MYPB14)) +
+  geom_point(alpha = 0.5, shape = 1, size = 3) +
+  labs(title = "Food Energy Intake by Quitting Smoking Status",
+       x = "Food Energy Intake (kcal)",
+       y = "Quit Smoking Due to Health Problems (Yes/No)") +
+  theme_minimal()
+
+```
+
+Plot shows no clear association between quitting smoking due to health problems and daily food energy intake.
+
+```{r}
+
+# 7. Exploring the relation of all smoking variables with Demographic characteristics (sex, race, ethnicity).
+
+boneExam_ds <- read.csv("boneExam.csv")
+
+# Define colors for sex and race-ethnicity
+
+sex_colors <- c("coral", "skyblue")
+
+race_ethnicity_colors <- c("firebrick", "gold", "forestgreen", "royalblue", "purple", "magenta") 
+
+boneExam_smoking <- c("MYPB1", "MYPB2", "MYPB3", "MYPB4", "MYPB5", "MYPB6R", "MYPB7R", "MYPB8", "MYPB9S", "MYPB10", "MYPB11", "MYPB12", "MYPB13S", "MYPB14", "MYPC17")
+
+# Create separate plots for each smoking variable, color-coded by race-ethnicity
+
+for (smoking_var in boneExam_smoking) {
+  print(ggplot(boneExam_ds, aes(x = !!sym(smoking_var), fill = factor(DMARETHN))) +
+    geom_bar(position = "stack", alpha = 0.7) +
+    scale_fill_manual(values = race_ethnicity_colors, name = "Race-Ethnicity") +
+    labs(title = paste("Smoking Variable:", smoking_var),
+         x = smoking_var,
+         y = "Count") +
+    theme_minimal())
+}
+
+```
+
+Similar to the first set of plots, but color-coded by race-ethnicity instead of sex. Each bar plot represents a different smoking variable. The x-axis represents the values of the smoking variable. The y-axis represents the count or frequency of each value. Bars are stacked, and each segment of the bar corresponds to a different race-ethnicity category. Different colors (firebrick, gold, forestgreen, royalblue, purple, magenta) are used to distinguish between different race-ethnicity categories.
+
+```{r}
+
+# 8. Analysis the relationship b/w age and Anthropometric measurements (weight, body mass index, ... ,Thigh Circumference).
+
+age_groups <- cut(boneExam_ds$HSAGEIR, breaks = 10)
+average_bmd_by_age <- aggregate(cbind(BDPFNBMD, BDPTRBMD, BDPINBMD, BDPTOBMD) ~ HSSEX + age_groups, boneExam_ds, FUN = mean)
+
+# Plot age vs. BMD for each region by sex
+ggplot(boneExam_ds, aes(x = HSAGEIR, y = BDPFNBMD, color = HSSEX)) +
+  geom_point() +
+  labs(title = "Femur Neck BMD vs. Age", x = "Age", y = "BMD (Femur Neck)") +
+  theme_bw() +
+  scale_x_continuous(limits = c(min(boneExam_ds$HSAGEIR), max(boneExam_ds$HSAGEIR))) +
+  scale_y_continuous(limits = c(min(boneExam_ds$BDPFNBMD), max(boneExam_ds$BDPFNBMD)))
+
+```
+
+It calculates the age-specific average BMD for each of the four bone regions (femur neck, trochanter, intertrochanter, and total) by dividing the data into age groups. This helps us visualize and analyze the potential age-related decline in BMD for each region separately. The code also plots the age vs. BMD for femur neck by sex, allowing us to visually compare the trends between men and women.
+
+```{r}
+
+# 9. Analysis of Anthropometric measurements with different sex groups.
+
+average_bmd_by_sex <- aggregate(cbind(BDPFNBMD, BDPTRBMD, BDPINBMD, BDPTOBMD) ~ HSSEX, boneExam_ds, FUN = mean)
+
+# It calculates the overall average BMD for each of the four bone regions for both men and women. Comparing these averages allows us to see if there are significant differences in BMD between sexes. The code also suggests performing statistical tests (e.g., t-test) to confirm these differences with more statistical rigor.
+
+# Compare BMD between sexes using appropriate tests (e.g., t-test) and Investigate the influence of body composition factors on BMD.
+
+# Create correlation plots between BMD regions and body composition factors
+
+ggplot(boneExam_ds, aes(x = BMPBMI, y = BDPFNBMD)) +
+  geom_point() +
+  labs(title = "BMI vs. Femur Neck BMD", x = "BMI", y = "BMD (Femur Neck)") +
+  theme_bw() +
+  scale_x_continuous(limits = c(min(boneExam_ds$BMPBMI), max(boneExam_ds$BMPBMI))) +
+  scale_y_continuous(limits = c(min(boneExam_ds$BDPFNBMD), max(boneExam_ds$BDPFNBMD)))
+
+```
+
+It creates correlation plots between BMD in the femur neck and various body composition factors like BMI, waist-to-hip ratio, and arm circumference.These plots help us visualize potential relationships between body composition and BMD, which can be further investigated through additional analyses. The code suggests repeating this process for other BMD regions and body composition factors to gain a more comprehensive understanding of their influence.
+
+```{r}
+
+# 10. Exploring the impact of Race-ethnicity on Anthropometric measurements.
+
+# Calculate BMD averages by race/ethnicity
+
+average_bmd_by_ethnicity <- aggregate(cbind(BDPFNBMD, BDPTRBMD, BDPINBMD, BDPTOBMD) ~ DMARETHN, boneExam_ds, FUN = mean)
+
+#  It calculates the average BMD for each of the four bone regions across different ethnicities. This helps us identify potential disparities in BMD between different ethnic groups.The code also suggests performing statistical tests (e.g., ANOVA) to assess the significance of these differences. Analyze potential interactions between variables (e.g., sex and age) on BMD using appropriate models (e.g., linear regression ")
+
+
+# 11. Exploring the Correlation Analysis b/w Anthropometric measurements.
+
+boneExam_subset <- boneExam_ds[, c("BMPBMI", "BMPWHR", "BMPARMC", "BMPTHICI", "BDPFNBMD", "BDPTRBMD", "BDPINBMD", "BDPTOBMD")]
+
+# Correlation analysis
+correlations <- cor(boneExam_subset, use = "pairwise.complete.obs")
+print(correlations)
+
+#  It selects a subset of columns containing body composition factors (BMI, WHR, arm circumference, thigh circumference) and BMD measurements for different regions (femur neck, trochanter, intertrochanter, total).It calculates the pairwise correlations between all the selected variables using the cor function. The use of pairwise.complete.obs argument ensures that only subjects with complete data are included in the analysis.
+
+
+anthropometry_subset <- boneExam_ds[, c("BMPWT", "BMPHT", "BMPARMC", "BMPWAIST", "BMPBUTTO", "BMPTHICI")]
+
+# Calculate correlations
+correlation_matrix <- cor(anthropometry_subset, use = "pairwise.complete.obs")
+
+# Using heatmap
+
+heatmap(correlation_matrix,
+        main = "Correlation Heatmap",
+        xlab = "Anthropometric Variables",
+        ylab = "Anthropometric Variables",
+        col = colorRampPalette(c("navy", "white", "firebrick3"))(50),
+        scale = "none",  # To disable the scale
+        symm = TRUE,      # To make the plot symmetric
+        margins = c(5, 5), # To add some space for labels
+        cexCol = 0.8,    # Adjust the size of column labels
+        cexRow = 0.8,    # Adjust the size of row labels
+        key.title = NA   # Remove the title of the color key
+)
+
+
+# 12. Predicting the Bone Mineral Density (BMD) using demographic and anthropometric factors using Linear Regression Model. Training, Testing and Evaluating the prediction of my model.
+
+# Select relevant features for prediction
+ 
+features <- c("HSAGEIR", "HSSEX", "BMPBMI", "BMPWHR", "BMPARMC", "BMPTHICI")
+
+# Prepare the target variable
+target <- boneExam_ds$BDPFNBMD
+
+# Split the data into training and testing sets
+
+set.seed(123)
+train_index <- sample(1:nrow(boneExam_ds), floor(0.7 * nrow(boneExam_ds)))
+train_data <- boneExam_ds[train_index, c(features, "BDPFNBMD")]
+test_data <- boneExam_ds[-train_index, c(features, "BDPFNBMD")]
+train_data <- na.omit(train_data)
+test_data <- na.omit(test_data)
+
+# Choose a model and train it
+
+linear_model <- lm(BDPFNBMD ~ ., data = train_data, na.action = na.exclude)
+
+# Evaluate the model
+predictions <- predict(linear_model, newdata = test_data)
+rmse <- sqrt(mean((predictions - test_data$BDPFNBMD)^2))
+
+cat("Root Mean Squared Error (RMSE):", rmse)
+
+```
+
+Features variable selects relevant factors for predicting BMD: age, sex, BMI, WHR, arm circumference, and thigh circumference. Target defines the target variable as femur neck BMD (BDPFNBMD). Train_index randomly splits the data into training and testing sets (70% training, 30% testing). Train_data and test_data subset the data with selected features and target variable based on the split.
+
+na.omit removes rows with missing values in both training and testing datasets.
+
+Lm builds a linear regression model predicting BDPFNBMD using all training data features. na.action = na.exclude instructs the model to ignore rows with missing values during training. Predict uses the trained model to predict BMD on the test data features. Rmse calculates the root mean squared error (RMSE) between predicted and actual BMD values in the test set.
+
+A lower RMSE indicates better model performance. In this case, an RMSE of 26201 suggests that the model's predictions deviate significantly from the actual BMD values, on average.
+
+```{r}
+
+# Extract predictions and actual BMD
+
+predictions <- predict(linear_model, newdata = test_data)
+actual_bmd <- test_data$BDPFNBMD
+
+theme_set(theme_minimal())
+ggplot(data.frame(actual_bmd, predictions), aes(x = actual_bmd, y = predictions)) +
+  geom_point(color = "blue", alpha = 0.7) +  
+  geom_smooth(method = "lm", se = FALSE, color = "red", lwd = 2) +
+  labs(title = "Actual vs. Predicted Femur Neck BMD",
+       x = "Actual BMD",
+       y = "Predicted BMD") +
+  theme_minimal() + 
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14, face = "bold"),
+        plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+        legend.position = "none")
+
+annotate("text", x = max(actual_bmd) - 0.1, y = max(predictions) - 0.1,
+         label = paste("RMSE:", round(rmse, 2)), color = "red", size = 4)
+
+```
+
+This code extracts the predicted BMD values from the model and plots them against the actual BMD values in the test set. It adds a fitted line to visualize the overall trend and annotates the plot with the RMSE value. This helps you visually assess how well the model captures the relationship between the features and BM.
+
+```{r}
+
+# 13. Comparing the average BMD across all ethnic groups and visualizing the distributions.
+
+# Calculate and display the average BMD for each racial/ethnic group
+
+# Convert DMARETHN to factor with explicit levels and Convert DMARETHN to a factor with meaningful labels
+
+boneExam_ds$DMARETHN <- factor(boneExam_ds$DMARETHN, levels = c(1, 2, 3, 4, 9), labels = c("Level 1", "Level 2", "Level 3", "Level 4", "Level 9"))
+
+bmd_by_race <- aggregate(BDPFNBMD ~ DMARETHN, data = boneExam_ds, FUN = mean)
+ 
+# Print the summary of average BMD by race/ethnicity
+
+print("Average BMD by Race/Ethnicity:")
+print(bmd_by_race)
+
+```
+
+
+
+```{r}
+# Visualize the distribution of BMD within each group Boxplot
+
+boxplot(BDPFNBMD ~ DMARETHN, data = boneExam_ds)
+title("Distribution of BMD by Race/Ethnicity")
+mtext("", side = 1, line = 3)  # Label for the x-axis
+mtext("", side = 2, line = 3)  # Label for the y-axis
+
+```
+
+The median BMD is highest for Level 1 and lowest for Level 9. There is more variation in BMD among Level 9 individuals than among individuals in other groups. There are outliers in all groups, but there are more outliers in Level 9".
+
+The boxplot you provided shows the distribution of bone mineral density (BMD) by race/ethnicity group for the boneExam_ds dataset. The x-axis shows the race/ethnicity group, and the y-axis shows BMD (Femur Neck). The boxplot shows the median, quartiles, and outliers for each group.
+
+```{r}
+
+# 14. Relationship between age and bone mineral density
+
+# Create a scatter plot of age vs. BMD 
+
+ggplot(boneExam_ds, aes(x = HSAGEIR, y = BDPFNBMD)) +
+  geom_point(color = "#00BFFF", size = 1) +
+  labs(title = "Age vs. Bone Mineral Density", x = "Age", y = "BMD",  fontface = "arial") +
+  theme_minimal() +
+  scale_x_continuous(limits = c(min(boneExam_ds$HSAGEIR), max(boneExam_ds$HSAGEIR))) +
+  scale_y_continuous(limits = c(min(boneExam_ds$BDPFNBMD), max(boneExam_ds$BDPFNBMD))) +
+  annotate("text", x = 15, y = 950, label = "Correlation: 0.35", color = "#00ACCC")
+
+```
+
+The graph shows that there is a negative correlation between age and BMD, meaning that BMD tends to decrease as age increases. This is because bones lose mass and density as we age. The correlation coefficient is 0.35, which indicates a moderate negative correlation. The graph also shows that there is a lot of variation in BMD at any given age. This is because BMD is influenced by a number of factors, including genetics, diet, exercise, and smoking.
+
+```{r}
+
+# 15. Relationship between sex and bone mineral density
+
+ggplot(boneExam_ds, aes(x = HSSEX, y = BDPFNBMD)) +
+  geom_point(color = "#009E73", size = 3) +
+  geom_boxplot() +
+  labs(title = "Bone Mineral Density (Femur Neck) by Sex", x = "Sex", y = "BMD (Femur Neck) (g/cm²)", fontface = "arial") +
+  theme_bw() +
+  scale_x_continuous(limits = c(min(boneExam_ds$HSSEX), max(boneExam_ds$HSSEX))) +
+  scale_y_continuous(limits = c(min(boneExam_ds$BDPFNBMD), max(boneExam_ds$BDPFNBMD))) +
+  annotate("text", x = 50, y = 900, label = "Corr: 0.35", color = "#F0E442", size = 12)
+
+```
+
+The graph shows that the range of BMD in the femur neck is from approximately 1.00 g/cm² to 1.75 g/cm². This means that some people have BMD values that fall within this range. However, the median BMD for women is 0.93 g/cm² and the median BMD for men is 1.08 g/cm². This means that most people have BMD values that are below 1.75 g/cm².
+The graph also shows that there is a significant overlap in the BMD distributions of men and women. This means that there are some men with BMD values that are lower than some women, and vice versa.
+
+<br>
+***A `Conclusion' section to summarize the results of the analysis, as well as any deviations from the project. ***
+
+This project conducted a thorough analysis of the boneExam_ds dataset, offering valuable insights into the intricate relationships between diverse factors and bone mineral density (BMD). Key findings encompassed a demographic overview, highlighting trends in participation based on age and gender. Visualizations of anthropometric measurements shed light on their distributions, potentially indicating areas of concern. Pregnant examinees were identified and analyzed, providing specific insights into potential health considerations for this group.
+
+The analysis delved into smoking history, including variables such as smoking status, age of initiation, and duration, revealing prevalence and potential benefits of smoking cessation. Associations between smoking variables and health measures like BMI and food intake were explored, uncovering potential relationships. Demographic disparities in smoking variables were also examined, shedding light on potential disparities or associations.
+
+The relationship between age and anthropometric measurements was explored, identifying potential trends in body composition changes over time. Sex-based differences in body composition were revealed through comparisons of anthropometric measurements across different gender groups. Ethnic disparities or variations in body composition were highlighted through an examination of the impact of race-ethnicity on anthropometric measurements.
+
+Correlations between anthropometric measurements provided further insights, and a linear regression model was built to predict BMD based on demographic and anthropometric factors. The model's accuracy and generalizability were assessed through training and testing. Variations in BMD across ethnic groups were identified, and the relationship between age and BMD was explored, revealing potential age-related changes. Sex-based differences in BMD were also investigated, providing a comprehensive understanding of the factors influencing bone health. Overall, the project illuminated critical areas for further research or intervention and underscored the importance of considering individual characteristics in BMD assessment and management.
+
+
+***
+
+**Due on Wednesday, December 13, by 2 pm**
